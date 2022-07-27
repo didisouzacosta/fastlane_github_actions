@@ -49,7 +49,7 @@ platform :ios do
 
   desc "Update certificates"
   lane :update_certificates do 
-    match(type: "development", readonly: is_ci) # Sinscronizando certificado de development
+    # match(type: "development", readonly: is_ci) # Sinscronizando certificado de development
     match(type: "appstore", readonly: is_ci) # Sincronizando certificado de produção
   end
 
