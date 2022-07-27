@@ -50,7 +50,7 @@ platform :ios do
   desc "Update certificates"
   lane :update_certificates do 
     match(type: "development") # Sinscronizando certificado de development
-    match(type: "appstore": readonly: is_ci) # Sincronizando certificado de produção
+    match(type: "appstore", readonly: is_ci) # Sincronizando certificado de produção
   end
 
   desc "Push a new beta build to TestFlight"
