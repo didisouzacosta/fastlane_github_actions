@@ -1,10 +1,5 @@
 name: Swift
 
-env:
-  TARGET: Testando Fastlane
-  XCODE_WORKSPACE: Testando Fastlane.xcworkspace
-  SIMULATOR: iPhone 11
-
 on:
   push:
     branches: [main]
@@ -22,7 +17,7 @@ jobs:
       - name: Deploy iOS Beta to TestFlight via Fastlane
         uses: maierj/fastlane-action@v1.4.0
         with:
-          lane: beta
+          lane: testflight
         env:
           MATCH_GIT_BASIC_AUTHORIZATION: '${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}'
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: '${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}'
