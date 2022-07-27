@@ -1,0 +1,65 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+
+  # Entrar em https://appleid.apple.com/account/manage para gerar a senha de 2 fatores para integração com o CI
+  ENV['FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD'] = 'zfoi-mdgz-jphr-vrbb'
+  
+  # Esse comando deve ser rodado no terminal para conseguir salvar e acessar os certificados no github  
+  # echo -n your_github_username:your_personal_access_token | base64
+  ENV['MATCH_GIT_BASIC_AUTHORIZATION'] = 'ZGlkaXNvdXphY29zdGE6Z2hwX3JUMmtDa3RPTUF6YVFTZmR4eXdEaDA5VWRYOGw0dzJBRE5pVQ=='
+
+  desc "Update certificates"
+  lane :update_certificates do 
+    match(type: "development") # Sinscronizando certificado de development
+    match(type: "appstore") # Sincronizando certificado de produção
+  end
+
+  desc "Push a new beta build to TestFlight"
+  lane :testflight do
+    update_certificates
+
+    # Incrementa do build number
+    increment_build_number(xcodeproj: "Testando Fastlane.xcodeproj")
+
+    # Faz o build do aplicativo gerando o .ipa
+    build_app(scheme: "Testando Fastlane")
+    
+    # Envia para Test Flight
+    upload_to_testflight
+  end
+
+  desc "Push a new build to AppStore"
+  lane :production do
+    update_certificates
+
+    # Incrementa do build number
+    increment_build_number(xcodeproj: "Testando Fastlane.xcodeproj")
+
+    # Faz o build do aplicativo gerando o .ipa
+    build_app(scheme: "Testando Fastlane")
+
+    # Envia para a loja
+    deliver(
+      force: true, # Skip HTMl report verification
+      skip_metadata: true,
+      skip_screenshots: true
+    )
+  end
+
+end
