@@ -19,8 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Select Xcode 13.4.1
-        run: sudo xcode-select -switch /Applications/Xcode_13.4.1.app
+      - name: Select Xcode 13.4
+        run: sudo xcode-select -switch /Applications/Xcode_13.4.app
 
       - name: Deploy iOS Beta to TestFlight via Fastlane
         uses: maierj/fastlane-action@v1.4.0
