@@ -15,14 +15,37 @@
 
 default_platform(:ios)
 
-platform :ios do
+# Entrar em https://appleid.apple.com/account/manage para gerar a senha de 2 fatores para integração com o CI
+# ENV['FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD'] = 'zfoi-mdgz-jphr-vrbb'
 
-  # Entrar em https://appleid.apple.com/account/manage para gerar a senha de 2 fatores para integração com o CI
-  ENV['FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD'] = 'zfoi-mdgz-jphr-vrbb'
-  
-  # Esse comando deve ser rodado no terminal para conseguir salvar e acessar os certificados no github  
-  # echo -n your_github_username:your_personal_access_token | base64
-  ENV['MATCH_GIT_BASIC_AUTHORIZATION'] = 'ZGlkaXNvdXphY29zdGE6Z2hwX3JUMmtDa3RPTUF6YVFTZmR4eXdEaDA5VWRYOGw0dzJBRE5pVQ=='
+# Esse comando deve ser rodado no terminal para conseguir salvar e acessar os certificados no github  
+# echo -n your_github_username:your_personal_access_token | base64
+# ENV['MATCH_GIT_BASIC_AUTHORIZATION'] = 'ZGlkaXNvdXphY29zdGE6Z2hwX3JUMmtDa3RPTUF6YVFTZmR4eXdEaDA5VWRYOGw0dzJBRE5pVQ=='
+
+TEMP_KEYCHAIN_USER = ENV["TEMP_KEYCHAIN_USER"]
+TEMP_KEYCHAIN_PASSWORD = ENV["TEMP_KEYCHAIN_PASSWORD"]
+
+def delete_temp_keychain(name)
+  delete_keychain(
+    name: name
+  ) if File.exist? File.expand_path("~/Library/Keychains/#{name}-db")
+end
+
+def create_temp_keychain(name, password)
+  create_keychain(
+    name: name,
+    password: password,
+    unlock: false,
+    timeout: 0
+  )
+end
+
+def ensure_temp_keychain(name, password)
+  delete_temp_keychain(name)
+  create_temp_keychain(name, password)
+end
+
+platform :ios do
 
   desc "Update certificates"
   lane :update_certificates do 
@@ -32,6 +55,11 @@ platform :ios do
 
   desc "Push a new beta build to TestFlight"
   lane :testflight do
+    keychain_name = TEMP_KEYCHAIN_USER
+    keychain_password = TEMP_KEYCHAIN_PASSWORD
+    ensure_temp_keychain(keychain_name, keychain_password)
+
+
     update_certificates
 
     # Incrementa do build number
@@ -41,11 +69,17 @@ platform :ios do
     build_app(scheme: "Testando Fastlane")
     
     # Envia para Test Flight
-    upload_to_testflight
+    # upload_to_testflight
+
+    delete_temp_keychain(keychain_name)
   end
 
   desc "Push a new build to AppStore"
   lane :production do
+    keychain_name = TEMP_KEYCHAIN_USER
+    keychain_password = TEMP_KEYCHAIN_PASSWORD
+    ensure_temp_keychain(keychain_name, keychain_password)
+
     update_certificates
 
     # Incrementa do build number
@@ -60,6 +94,8 @@ platform :ios do
       skip_metadata: true,
       skip_screenshots: true
     )
+
+    delete_temp_keychain(keychain_name)
   end
 
 end
